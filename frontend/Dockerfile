@@ -4,8 +4,14 @@ FROM oven/bun:1.1
 # Set working directory
 WORKDIR /app
 
+# Debug: Show files in current dir
+RUN ls -la
+
 # Copy everything
 COPY . .
+
+# Debug: Show files after copy
+RUN ls -la
 
 # Install dependencies
 RUN bun install
