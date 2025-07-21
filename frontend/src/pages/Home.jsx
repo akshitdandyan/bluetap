@@ -1,20 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import getIpAddress from "../utils/getIpAddress";
 import DeviceDetector from "device-detector-js";
 import QRScanner from "../components/QRScanner";
+import { clientSocketStore, metaInfoStore } from "../utils/store";
 
 const Home = () => {
   const [ip, setIp] = useState("");
   const [brand, setBrand] = useState("");
-  const [isConnected, setIsConnected] = useState(false);
-  const [socket, setSocket] = useState(null);
-  const [qrCodeUrl, setQrCodeUrl] = useState("");
-  const [uniqueUsername, setUniqueUsername] = useState("");
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [scannedQRValue, setScannedQRValue] = useState("");
 
+  const socketInstance = clientSocketStore((s) => s.socketInstance);
+  const setSocketInstance = clientSocketStore((s) => s.setSocketInstance);
+  const addSocketEvents = clientSocketStore((s) => s.addSocketEvents);
+  const isConnected = clientSocketStore((s) => s.isConnected);
+
+  const qrCodeUrl = metaInfoStore((s) => s.qrCodeUrl);
+  const uniqueRandomId = metaInfoStore((s) => s.uniqueRandomId);
+
+  const initFunctionDone = useRef(false);
+
   async function init() {
+    if (initFunctionDone.current) return;
+    initFunctionDone.current = true;
     try {
       const ipAddress = await getIpAddress();
       setIp(ipAddress);
@@ -27,29 +36,15 @@ const Home = () => {
       const serverUrl = import.meta.env.VITE_SERVER_URL;
       console.log("serverUrl", serverUrl);
 
-      const socketInstance = io(serverUrl, {
+      const newSocketInstance = io(serverUrl, {
         query: {
           ip: ipAddress,
           brand: deviceInfo,
         },
       });
 
-      socketInstance.on("connect", () => {
-        console.log("Connected to server");
-        setIsConnected(true);
-      });
-
-      socketInstance.on("disconnect", () => {
-        console.log("Disconnected from server");
-        setIsConnected(false);
-      });
-
-      socketInstance.on("qrCodeImageUrl", (qrUrl) => {
-        console.log("Received QR code URL");
-        setQrCodeUrl(qrUrl);
-      });
-
-      setSocket(socketInstance);
+      setSocketInstance(newSocketInstance);
+      addSocketEvents(newSocketInstance);
     } catch (error) {
       console.error("Error initializing:", error);
     }
@@ -59,8 +54,8 @@ const Home = () => {
     init();
 
     return () => {
-      if (socket) {
-        socket.disconnect();
+      if (socketInstance) {
+        socketInstance.disconnect();
       }
     };
   }, []);

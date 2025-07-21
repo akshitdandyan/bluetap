@@ -1,5 +1,6 @@
 import { Routes, Route, BrowserRouter } from "react-router";
 import Home from "./pages/Home";
+import PairRequestPopup from "./components/PairRequestPopup";
 
 function App() {
   return (
@@ -7,6 +8,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
       </Routes>
+      <PairRequestPopup />
     </BrowserRouter>
   );
 }
