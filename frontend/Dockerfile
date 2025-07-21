@@ -7,7 +7,12 @@ RUN echo "== Before COPY ==" && ls -la
 
 COPY ./frontend/ ./
 
+
+
 RUN echo "== After COPY ==" && ls -la && cat package.json
+
+ARG VITE_SERVER_URL
+ENV VITE_SERVER_URL=$VITE_SERVER_URL
 
 RUN bun install
 RUN bun run build

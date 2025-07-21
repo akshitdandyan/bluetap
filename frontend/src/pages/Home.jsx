@@ -24,7 +24,10 @@ const Home = () => {
       const deviceInfo = `${device.device.brand}/${device.device.model}/${device.os.name}`;
       setBrand(deviceInfo);
 
-      const socketInstance = io(import.meta.env.VITE_SERVER_URL, {
+      const serverUrl = import.meta.env.VITE_SERVER_URL;
+      console.log("serverUrl", serverUrl);
+
+      const socketInstance = io(serverUrl, {
         query: {
           ip: ipAddress,
           brand: deviceInfo,
