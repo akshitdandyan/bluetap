@@ -1,19 +1,21 @@
 import React from "react";
 import { pairRequestPopUpStore } from "../utils/store";
+import axiosInstance from "../utils/axios";
 
 const PairRequestPopup = () => {
   const { pairRequests, removePairRequest } = pairRequestPopUpStore();
 
-  const handleAccept = (request) => {
-    console.log("Accepting pair request from:", request.senderUniqueUsername);
-    // TODO: Implement accept logic here
-    removePairRequest(request.senderUniqueRandomId);
-  };
-
-  const handleDecline = (request) => {
-    console.log("Declining pair request from:", request.senderUniqueUsername);
-    // TODO: Implement decline logic here
-    removePairRequest(request.senderUniqueRandomId);
+  const handleReply = async (request, isAccepted) => {
+    try {
+      removePairRequest(request.senderUniqueRandomId);
+      await axiosInstance.post("/pair-request-reply", {
+        isAccepted,
+        uniqueRandomId: localStorage.getItem("_uniqueRandomId"),
+        senderDeviceUniqueRandomId: request.senderUniqueRandomId,
+      });
+    } catch (error) {
+      console.error("Error replying to pair request:", error);
+    }
   };
 
   if (pairRequests.length === 0) {
@@ -43,13 +45,13 @@ const PairRequestPopup = () => {
             </div>
             <div className="flex gap-2 ml-4">
               <button
-                onClick={() => handleAccept(request)}
+                onClick={() => handleReply(request, true)}
                 className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors text-sm font-medium"
               >
                 Accept
               </button>
               <button
-                onClick={() => handleDecline(request)}
+                onClick={() => handleReply(request, false)}
                 className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-sm font-medium"
               >
                 Decline

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import jsQR from "jsqr";
 import axiosInstance from "../utils/axios";
-import { metaInfoStore } from "../utils/store";
+import { metaInfoStore, notificationStore } from "../utils/store";
 
 const QRScanner = ({ onQRCodeDetected, onClose }) => {
   const [isScanning, setIsScanning] = useState(false);
@@ -195,10 +195,17 @@ const QRScanner = ({ onQRCodeDetected, onClose }) => {
             isScanningRef.current = false;
             onQRCodeDetected?.(code.data);
 
+            const senderDeviceUniqueRandomId =
+              metaInfoStore.getState().uniqueRandomId;
+
+            // Add pending request notification
+            notificationStore
+              .getState()
+              .addPendingRequest(senderDeviceUniqueRandomId);
+
             axiosInstance.post("/send-pair-request", {
               uniqueRandomId: code.data,
-              senderDeviceUniqueRandomId:
-                metaInfoStore.getState().uniqueRandomId,
+              senderDeviceUniqueRandomId,
             });
 
             // Stop the camera stream
