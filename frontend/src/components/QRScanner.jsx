@@ -14,6 +14,58 @@ const QRScanner = ({ onQRCodeDetected, onClose }) => {
   const streamRef = useRef(null);
   const isScanningRef = useRef(false);
 
+  const checkExistingPermission = async () => {
+    try {
+      // Check if we already have camera permission
+      const permissions = await navigator.permissions.query({ name: "camera" });
+      if (permissions.state === "granted") {
+        console.log("Camera permission already granted, starting directly...");
+        setHasPermission(true);
+        await startCameraDirectly();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.log("Could not check existing permission:", err);
+      return false;
+    }
+  };
+
+  const startCameraDirectly = async () => {
+    try {
+      console.log("Starting camera directly...");
+      const constraints = {
+        video: {
+          facingMode: "environment",
+          width: { min: 640, ideal: 1280, max: 1920 },
+          height: { min: 480, ideal: 720, max: 1080 },
+          aspectRatio: { ideal: 1.7777777778 },
+        },
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      console.log("Camera started directly, stream:", stream);
+      setHasPermission(true);
+      streamRef.current = stream;
+
+      const waitForVideo = () => {
+        if (videoRef.current) {
+          console.log("Video element found, setting up...");
+          setupVideo(stream);
+        } else {
+          console.log("Video element not ready, waiting...");
+          setTimeout(waitForVideo, 100);
+        }
+      };
+
+      waitForVideo();
+    } catch (err) {
+      console.error("Direct camera start failed:", err);
+      setHasPermission(false);
+      setError("Failed to start camera. Please try again.");
+    }
+  };
+
   const requestCameraPermission = async () => {
     try {
       console.log("Requesting camera permission...");
@@ -268,6 +320,9 @@ const QRScanner = ({ onQRCodeDetected, onClose }) => {
   };
 
   useEffect(() => {
+    // Check for existing camera permission when component mounts
+    checkExistingPermission();
+
     return () => {
       stopScanning();
     };
