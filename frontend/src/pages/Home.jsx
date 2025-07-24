@@ -32,8 +32,12 @@ const Home = () => {
 
       const deviceDetector = new DeviceDetector();
       const device = deviceDetector.parse(navigator.userAgent);
-      const deviceInfo = `${device.device.brand}/${device.device.model}/${device.os.name}`;
-      setBrand(deviceInfo);
+      const deviceInfo =
+        `${device.device.brand}/${device.device.model}/${device.os.name}`.replace(
+          "//",
+          "/"
+        );
+      setBrand(deviceInfo ? deviceInfo : "DEVICE");
 
       const serverUrl = import.meta.env.VITE_SERVER_URL;
       console.log("serverUrl", serverUrl);
@@ -72,110 +76,42 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
       {/* Device Header */}
-      <DeviceHeader />
+      <DeviceHeader brand={brand} />
 
-      <div className="flex items-center justify-center p-4">
-        <div className="max-w-md w-full">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-              BlueTap
-            </h1>
-            <p className="text-gray-600 text-sm">Device Connection Hub</p>
-          </div>
-
-          {/* Main Card */}
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-            {/* Connection Status */}
-            <div className="flex items-center justify-center mb-6">
-              <div
-                className={`w-4 h-4 rounded-full mr-3 ${
-                  isConnected ? "bg-green-500 animate-pulse" : "bg-red-500"
-                }`}
-              ></div>
-              <span
-                className={`font-medium ${
-                  isConnected ? "text-green-600" : "text-red-600"
-                }`}
-              >
-                {isConnected ? "Connected" : "Disconnected"}
-              </span>
-            </div>
-
-            {/* Device Info */}
-            <div className="space-y-4 mb-6">
-              {/* IP Address */}
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">
-                      IP Address
-                    </p>
-                    <p className="text-lg font-mono font-semibold text-gray-800">
-                      {ip || "Loading..."}
-                    </p>
-                  </div>
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-4 h-4 text-blue-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto">
+          {/* Connection Status Card */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 mb-8">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center">
+                <div
+                  className={`w-3 h-3 rounded-full mr-3 ${
+                    isConnected ? "bg-emerald-500 animate-pulse" : "bg-red-500"
+                  }`}
+                ></div>
+                <span
+                  className={`text-sm font-semibold ${
+                    isConnected ? "text-emerald-700" : "text-red-700"
+                  }`}
+                >
+                  {isConnected ? "Connected" : "Disconnected"}
+                </span>
               </div>
-
-              {/* Device Brand */}
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">
-                      Device Info
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 leading-relaxed">
-                      {brand || "Loading..."}
-                    </p>
-                  </div>
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-4 h-4 text-purple-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </div>
-                </div>
+              <div className="text-xs text-slate-500 font-medium">
+                {isConnected ? "Ready to share" : "Connecting..."}
               </div>
             </div>
-
-            {/* Paired Devices List */}
-            <PairedDevicesList />
 
             {/* QR Code Section */}
             {isConnected && qrCodeUrl && (
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100 mb-6">
+              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl p-8 border border-emerald-200/50 mb-8">
                 <div className="text-center">
-                  <div className="flex items-center justify-center mb-3">
-                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                  <div className="flex items-center justify-center mb-6">
+                    <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center mr-3">
                       <svg
-                        className="w-4 h-4 text-green-600"
+                        className="w-5 h-5 text-emerald-600"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -188,34 +124,43 @@ const Home = () => {
                         />
                       </svg>
                     </div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">
-                      Device QR Code
+                    <p className="text-sm text-emerald-700 font-semibold uppercase tracking-wider">
+                      Your QR Code
                     </p>
                   </div>
 
-                  <div className="bg-white rounded-lg p-4 inline-block shadow-sm border border-green-200">
+                  <div className="bg-white rounded-2xl p-6 inline-block shadow-lg border border-emerald-200/50">
                     <img
                       src={qrCodeUrl}
                       alt="Device QR Code"
-                      className="w-32 h-32 mx-auto"
+                      className="w-40 h-40 mx-auto"
                     />
                   </div>
 
-                  <p className="text-xs text-gray-500 mt-3">
+                  <p className="text-sm text-slate-600 mt-4 font-medium">
                     Scan this QR code to connect another device
                   </p>
                 </div>
               </div>
             )}
 
-            {/* QR Scanner Button */}
-            <div className="mb-6">
+            {/* Paired Devices */}
+            <div className="mb-8">
+              <h3 className="text-lg font-bold text-slate-900 mb-4">
+                Connected Devices
+              </h3>
+              <PairedDevicesList />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-4">
+              {/* QR Scanner Button */}
               <button
                 onClick={() => setShowQRScanner(true)}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium flex items-center justify-center"
+                className="w-full bg-gradient-to-r from-slate-900 to-slate-800 text-white py-4 px-6 rounded-2xl hover:from-slate-800 hover:to-slate-700 transition-all duration-300 font-semibold flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 <svg
-                  className="w-5 h-5 mr-2"
+                  className="w-5 h-5 mr-3"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -230,51 +175,13 @@ const Home = () => {
                 Scan QR Code
               </button>
             </div>
-
-            {/* Scanned QR Result */}
-            {scannedQRValue && (
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-4 border border-yellow-100 mb-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-1">
-                      Scanned QR Code
-                    </p>
-                    <p className="text-sm font-mono text-gray-800 break-all">
-                      {scannedQRValue}
-                    </p>
-                  </div>
-                  <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-4 h-4 text-yellow-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Status Message */}
-            <div className="text-center">
-              <p className="text-xs text-gray-500">
-                {isConnected
-                  ? "Your device is connected to the BlueTap network"
-                  : "Connecting to BlueTap network..."}
-              </p>
-            </div>
           </div>
 
           {/* Footer */}
-          <div className="text-center mt-6">
-            <p className="text-xs text-gray-400">Real-time device monitoring</p>
+          <div className="text-center">
+            <p className="text-sm text-slate-500 font-medium">
+              Real-time device connectivity platform
+            </p>
           </div>
         </div>
       </div>

@@ -151,7 +151,7 @@ const QRScanner = ({ onQRCodeDetected, onClose }) => {
 
     console.log("Starting scan frame loop...");
 
-    const scanFrame = () => {
+    const scanFrame = async () => {
       console.log("Scanning frame...", isScanningRef.current);
       if (!isScanningRef.current) {
         console.log("isScanning is false, stopping scan");
@@ -203,10 +203,23 @@ const QRScanner = ({ onQRCodeDetected, onClose }) => {
               .getState()
               .addPendingRequest(senderDeviceUniqueRandomId);
 
-            axiosInstance.post("/send-pair-request", {
-              uniqueRandomId: code.data,
-              senderDeviceUniqueRandomId,
-            });
+            try {
+              await axiosInstance.post("/send-pair-request", {
+                uniqueRandomId: code.data,
+                senderDeviceUniqueRandomId,
+              });
+            } catch (error) {
+              console.error("Error sending pair request:", error);
+              // Remove pending request and add error notification
+              notificationStore
+                .getState()
+                .removePendingRequest(senderDeviceUniqueRandomId);
+              notificationStore.getState().addNotification({
+                message: "Failed to send pair request. Please try again.",
+                type: "error",
+                errorType: "NETWORK_ERROR",
+              });
+            }
 
             // Stop the camera stream
             if (streamRef.current) {

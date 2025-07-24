@@ -1,9 +1,9 @@
 import { Routes, Route, BrowserRouter } from "react-router";
 import Home from "./pages/Home";
 import PairRequestPopup from "./components/PairRequestPopup";
-import NotificationPopup from "./components/NotificationPopup";
 import FileReceivedModal from "./components/FileReceivedModal";
 import TextReceivedModal from "./components/TextReceivedModal";
+import Notification from "./components/Notification";
 import { notificationStore } from "./utils/store";
 
 function App() {
@@ -11,6 +11,8 @@ function App() {
   const clearReceivedFile = notificationStore((s) => s.clearReceivedFile);
   const receivedText = notificationStore((s) => s.receivedText);
   const clearReceivedText = notificationStore((s) => s.clearReceivedText);
+  const notifications = notificationStore((s) => s.notifications);
+  const removeNotification = notificationStore((s) => s.removeNotification);
 
   const handleDownload = async (fileData) => {
     try {
@@ -62,7 +64,6 @@ function App() {
         <Route path="/" element={<Home />} />
       </Routes>
       <PairRequestPopup />
-      <NotificationPopup />
       {receivedFile && (
         <FileReceivedModal
           fileData={receivedFile}
@@ -77,6 +78,16 @@ function App() {
           onIgnore={handleTextIgnore}
         />
       )}
+
+      {/* Notifications */}
+      {notifications.map((notification) => (
+        <Notification
+          key={notification.id}
+          message={notification.message}
+          type={notification.type || "error"}
+          onClose={() => removeNotification(notification.id)}
+        />
+      ))}
     </BrowserRouter>
   );
 }

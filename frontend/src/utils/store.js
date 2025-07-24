@@ -52,11 +52,31 @@ export const clientSocketStore = create((set) => ({
 
     socketInstance.on("PAIR_REQUEST_REPLY", (data) => {
       console.log("Received PAIR_REQUEST_REPLY", data);
-      // Remove the pending request and add the notification
+      // Remove the pending request
       notificationStore
         .getState()
         .removePendingRequest(data.senderDeviceUniqueRandomId);
-      notificationStore.getState().addNotification(data);
+
+      // Only add notification for successful replies
+      if (data.isAccepted) {
+        notificationStore.getState().addNotification({
+          message: "Device paired successfully!",
+          type: "success",
+        });
+      }
+    });
+
+    socketInstance.on("PAIR_REQUEST_ERROR", (data) => {
+      console.log("Received PAIR_REQUEST_ERROR", data);
+      // Remove pending request and add error notification
+      notificationStore
+        .getState()
+        .removePendingRequest(data.senderDeviceUniqueRandomId);
+      notificationStore.getState().addNotification({
+        message: data.message,
+        type: "error",
+        errorType: data.errorType,
+      });
     });
 
     socketInstance.on("NEW_FILE_RECEIVED", (data) => {
@@ -66,6 +86,7 @@ export const clientSocketStore = create((set) => ({
         fileName: data.fileName,
         url: data.url,
         mime: data.mime,
+        fileSize: data.fileSize,
         senderDeviceUniqueRandomId: data.senderDeviceUniqueRandomId,
         senderUsername: data.senderUsername,
         timestamp: new Date(),
