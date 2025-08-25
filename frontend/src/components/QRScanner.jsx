@@ -241,36 +241,55 @@ const QRScanner = ({ onQRCodeDetected, onClose }) => {
 
           if (code) {
             console.log("QR code detected:", code.data);
+
+            // Extract device token from QR code data
+            let deviceToken = code.data;
+
+            // Check if it's a URL format (e.g., http://localhost:3000/pair-with/abc123)
+            if (code.data.includes("/pair-with/")) {
+              const urlParts = code.data.split("/pair-with/");
+              deviceToken = urlParts[urlParts.length - 1];
+              console.log("Extracted device token from URL:", deviceToken);
+            }
+
             // QR code detected!
-            setScannedValue(code.data);
+            setScannedValue(deviceToken);
             setIsScanning(false);
             isScanningRef.current = false;
-            onQRCodeDetected?.(code.data);
+            onQRCodeDetected?.(deviceToken);
 
-            const senderDeviceUniqueRandomId =
-              metaInfoStore.getState().uniqueRandomId;
+            // Check if this is a BlueTap pair-with URL
+            if (code.data.includes("/pair-with/")) {
+              // For BlueTap URLs, just navigate to the URL instead of sending request directly
+              // The PairWith page will handle the pair request
+              window.location.href = code.data;
+            } else {
+              // For direct device tokens, send pair request immediately
+              const senderDeviceUniqueRandomId =
+                metaInfoStore.getState().uniqueRandomId;
 
-            // Add pending request notification
-            notificationStore
-              .getState()
-              .addPendingRequest(senderDeviceUniqueRandomId);
-
-            try {
-              await axiosInstance.post("/send-pair-request", {
-                uniqueRandomId: code.data,
-                senderDeviceUniqueRandomId,
-              });
-            } catch (error) {
-              console.error("Error sending pair request:", error);
-              // Remove pending request and add error notification
+              // Add pending request notification
               notificationStore
                 .getState()
-                .removePendingRequest(senderDeviceUniqueRandomId);
-              notificationStore.getState().addNotification({
-                message: "Failed to send pair request. Please try again.",
-                type: "error",
-                errorType: "NETWORK_ERROR",
-              });
+                .addPendingRequest(senderDeviceUniqueRandomId);
+
+              try {
+                await axiosInstance.post("/send-pair-request", {
+                  uniqueRandomId: deviceToken,
+                  senderDeviceUniqueRandomId,
+                });
+              } catch (error) {
+                console.error("Error sending pair request:", error);
+                // Remove pending request and add error notification
+                notificationStore
+                  .getState()
+                  .removePendingRequest(senderDeviceUniqueRandomId);
+                notificationStore.getState().addNotification({
+                  message: "Failed to send pair request. Please try again.",
+                  type: "error",
+                  errorType: "NETWORK_ERROR",
+                });
+              }
             }
 
             // Stop the camera stream

@@ -1,5 +1,6 @@
 import { Routes, Route, BrowserRouter } from "react-router";
 import Home from "./pages/Home";
+import PairWith from "./pages/PairWith";
 import PairRequestPopup from "./components/PairRequestPopup";
 import FileReceivedModal from "./components/FileReceivedModal";
 import TextReceivedModal from "./components/TextReceivedModal";
@@ -62,6 +63,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/pair-with/:deviceToken" element={<PairWith />} />
       </Routes>
       <PairRequestPopup />
       {receivedFile && (

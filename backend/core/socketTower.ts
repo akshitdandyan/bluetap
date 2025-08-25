@@ -51,7 +51,11 @@ function setupSocketAndServer(expressApp: Express) {
       connectionCode: device.connectionCode,
     });
 
-    qrcode.toDataURL(device._uniqueRandomId).then((qrCodeImageUrl) => {
+    // Generate QR code with URL instead of just the token
+    const qrCodeData = `${
+      process.env.VITE_FRONTEND_URL || "http://localhost:5173"
+    }/pair-with/${device._uniqueRandomId}`;
+    qrcode.toDataURL(qrCodeData).then((qrCodeImageUrl) => {
       socket.emit("QR_CODE_IMAGE_URL", qrCodeImageUrl);
     });
 
