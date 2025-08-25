@@ -1,10 +1,32 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { metaInfoStore, clientSocketStore } from "../utils/store";
+import DeviceDetector from "device-detector-js";
 
-const DeviceHeader = ({ brand }) => {
+const DeviceHeader = () => {
   const uniqueRandomId = metaInfoStore((s) => s.uniqueRandomId);
   const username = metaInfoStore((s) => s.username);
   const isConnected = clientSocketStore((s) => s.isConnected);
+  const [brand, setBrand] = useState("");
+
+  useEffect(() => {
+    const getDeviceInfo = () => {
+      try {
+        const deviceDetector = new DeviceDetector();
+        const device = deviceDetector.parse(navigator.userAgent);
+        const deviceInfo =
+          `${device.device.brand}/${device.device.model}/${device.os.name}`.replace(
+            "//",
+            "/"
+          );
+        setBrand(deviceInfo || "Unknown Device");
+      } catch (error) {
+        console.error("Error getting device info:", error);
+        setBrand("Unknown Device");
+      }
+    };
+
+    getDeviceInfo();
+  }, []);
 
   // Get username from store or generate from uniqueRandomId
   const getUsername = () => {

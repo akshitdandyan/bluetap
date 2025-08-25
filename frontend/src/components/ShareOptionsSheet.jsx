@@ -1,6 +1,46 @@
 import React from "react";
+import { pairRequestPopUpStore } from "../utils/store";
+import axiosInstance from "../utils/axios";
 
 const ShareOptionsSheet = ({ device, onClose, onSelectFile, onSelectText }) => {
+  const { setNicknameSelection, clearNicknameSelection } =
+    pairRequestPopUpStore();
+
+  const handleEditNickname = () => {
+    // Close the share options sheet first
+    onClose();
+
+    // Then show the nickname selection modal
+    setNicknameSelection({
+      deviceInfo: {
+        targetDeviceId: device._uniqueRandomId,
+        targetDeviceUsername: device.uniqueUsername,
+        targetDeviceBrand: device.brand,
+        isForReceiver: true, // This will be determined by the backend
+      },
+      onConfirm: async (nickname) => {
+        try {
+          const currentDeviceId = localStorage.getItem("_uniqueRandomId");
+
+          // Update the nickname
+          await axiosInstance.post("/update-device-nickname", {
+            senderDeviceUniqueRandomId: currentDeviceId,
+            receiverDeviceUniqueRandomId: device._uniqueRandomId,
+            nickname: nickname,
+            updatedBy: currentDeviceId,
+          });
+
+          console.log("Nickname updated successfully");
+        } catch (error) {
+          console.error("Error updating nickname:", error);
+        }
+      },
+      onClose: () => {
+        clearNicknameSelection();
+      },
+    });
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end z-50">
       <div className="bg-white rounded-t-2xl w-full p-6 animate-slide-up">
@@ -26,7 +66,9 @@ const ShareOptionsSheet = ({ device, onClose, onSelectFile, onSelectText }) => {
               <h3 className="text-lg font-semibold text-gray-900">
                 Share with
               </h3>
-              <p className="text-sm text-gray-600">{device.uniqueUsername}</p>
+              <p className="text-sm text-gray-600">
+                {device.displayName || device.uniqueUsername}
+              </p>
             </div>
           </div>
           <button
@@ -51,6 +93,49 @@ const ShareOptionsSheet = ({ device, onClose, onSelectFile, onSelectText }) => {
 
         {/* Options */}
         <div className="space-y-4">
+          {/* Edit Nickname Option */}
+          <button
+            onClick={handleEditNickname}
+            className="w-full p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100 hover:from-green-100 hover:to-emerald-100 transition-all duration-200 flex items-center"
+          >
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+              <svg
+                className="w-6 h-6 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+            </div>
+            <div className="text-left">
+              <h4 className="text-lg font-semibold text-gray-900">
+                Edit Nickname
+              </h4>
+              <p className="text-sm text-gray-600">
+                Change how this device appears
+              </p>
+            </div>
+            <svg
+              className="w-5 h-5 text-gray-400 ml-auto"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+
           {/* File Option */}
           <button
             onClick={onSelectFile}

@@ -3,6 +3,7 @@ import { io } from "socket.io-client";
 import getIpAddress from "../utils/getIpAddress";
 import DeviceDetector from "device-detector-js";
 import QRScanner from "../components/QRScanner";
+import ManualCodeEntry from "../components/ManualCodeEntry";
 import PairedDevicesList from "../components/PairedDevicesList";
 import DeviceHeader from "../components/DeviceHeader";
 import { clientSocketStore, metaInfoStore } from "../utils/store";
@@ -11,6 +12,7 @@ const Home = () => {
   const [ip, setIp] = useState("");
   const [brand, setBrand] = useState("");
   const [showQRScanner, setShowQRScanner] = useState(false);
+  const [showManualCodeEntry, setShowManualCodeEntry] = useState(false);
   const [scannedQRValue, setScannedQRValue] = useState("");
 
   const socketInstance = clientSocketStore((s) => s.socketInstance);
@@ -20,6 +22,7 @@ const Home = () => {
 
   const qrCodeUrl = metaInfoStore((s) => s.qrCodeUrl);
   const uniqueRandomId = metaInfoStore((s) => s.uniqueRandomId);
+  const connectionCode = metaInfoStore((s) => s.connectionCode);
 
   const initFunctionDone = useRef(false);
 
@@ -77,32 +80,50 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
-      {/* Device Header */}
-      <DeviceHeader brand={brand} />
-
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          {/* Connection Status Card */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8 mb-8">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center">
-                <div
-                  className={`w-3 h-3 rounded-full mr-3 ${
-                    isConnected ? "bg-emerald-500 animate-pulse" : "bg-red-500"
-                  }`}
-                ></div>
-                <span
-                  className={`text-sm font-semibold ${
-                    isConnected ? "text-emerald-700" : "text-red-700"
-                  }`}
-                >
-                  {isConnected ? "Connected" : "Disconnected"}
-                </span>
+        <div className="max-w-md mx-auto">
+          {/* Device Header */}
+          <DeviceHeader />
+
+          {/* Main Content */}
+          <div className="mt-8">
+            {/* Connection Code Section */}
+            {isConnected && connectionCode && (
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl p-8 border border-blue-200/50 mb-8">
+                <div className="text-center">
+                  <div className="flex items-center justify-center mb-6">
+                    <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center mr-3">
+                      <svg
+                        className="w-5 h-5 text-blue-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                        />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-blue-700 font-semibold uppercase tracking-wider">
+                      Your Connection Code
+                    </p>
+                  </div>
+
+                  <div className="bg-white rounded-2xl p-6 inline-block shadow-lg border border-blue-200/50 mb-4">
+                    <div className="text-4xl font-bold text-blue-600 tracking-widest">
+                      {connectionCode}
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-slate-600 font-medium">
+                    Share this code with another device to connect
+                  </p>
+                </div>
               </div>
-              <div className="text-xs text-slate-500 font-medium">
-                {isConnected ? "Ready to share" : "Connecting..."}
-              </div>
-            </div>
+            )}
 
             {/* QR Code Section */}
             {isConnected && qrCodeUrl && (
@@ -174,6 +195,27 @@ const Home = () => {
                 </svg>
                 Scan QR Code
               </button>
+
+              {/* Manual Code Entry Button */}
+              <button
+                onClick={() => setShowManualCodeEntry(true)}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-2xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-semibold flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                <svg
+                  className="w-5 h-5 mr-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
+                </svg>
+                Enter Code Manually
+              </button>
             </div>
           </div>
 
@@ -192,6 +234,11 @@ const Home = () => {
           onQRCodeDetected={handleQRCodeDetected}
           onClose={() => setShowQRScanner(false)}
         />
+      )}
+
+      {/* Manual Code Entry Modal */}
+      {showManualCodeEntry && (
+        <ManualCodeEntry onClose={() => setShowManualCodeEntry(false)} />
       )}
     </div>
   );

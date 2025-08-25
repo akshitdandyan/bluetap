@@ -11,6 +11,8 @@ const PairedDevicesList = () => {
   const [showFileShare, setShowFileShare] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
 
+  console.log("PairedDevicesList - pairedDevices:", pairedDevices);
+
   // Generate consistent colors based on username
   const getDeviceColor = (username) => {
     const colors = [
@@ -40,6 +42,17 @@ const PairedDevicesList = () => {
     if (!brand) return "Unknown";
     const parts = brand.split("/");
     return parts[0] || "Unknown";
+  };
+
+  // Get display name for device (nickname or username)
+  const getDisplayName = (device) => {
+    return device.displayName || device.uniqueUsername;
+  };
+
+  // Get initials for avatar
+  const getInitials = (device) => {
+    const displayName = getDisplayName(device);
+    return displayName.charAt(0).toUpperCase();
   };
 
   if (!pairedDevices || pairedDevices.length === 0) {
@@ -112,7 +125,7 @@ const PairedDevicesList = () => {
                     !device.isOnline ? "opacity-60" : ""
                   } group-hover:shadow-xl transition-all duration-300`}
                 >
-                  {device.uniqueUsername.charAt(0).toUpperCase()}
+                  {getInitials(device)}
                 </div>
 
                 {/* Online/Offline indicator */}
@@ -121,12 +134,31 @@ const PairedDevicesList = () => {
                     device.isOnline ? "bg-emerald-500" : "bg-slate-400"
                   }`}
                 ></div>
+
+                {/* Custom nickname indicator */}
+                {device.hasCustomNickname && (
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 border-2 border-white rounded-full shadow-lg flex items-center justify-center">
+                    <svg
+                      className="w-3 h-3 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
+                    </svg>
+                  </div>
+                )}
               </div>
 
               {/* Device Info */}
               <div className="text-center">
                 <p className="text-sm font-semibold text-slate-900 truncate max-w-24 mb-1">
-                  {device.uniqueUsername}
+                  {getDisplayName(device)}
                 </p>
                 <p className="text-xs text-slate-500 truncate max-w-24">
                   {device.isOnline ? getBrandName(device.brand) : "Offline"}
