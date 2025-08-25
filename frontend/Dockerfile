@@ -18,4 +18,5 @@ RUN bun install
 RUN bun run build
 RUN bun add serve
 
-CMD ["bun", "x", "serve", "dist"]
+# Use serve with SPA configuration to handle client-side routing
+CMD ["bun", "x", "serve", "dist", "-s", "-l", "3000"]
